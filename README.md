@@ -70,7 +70,7 @@ spinlint validate 'pipelines/**/*.json' overrides/hotfix.json
 
 | Flag | Short | Default | Description |
 |---|---|---|---|
-| `--format` | `-f` | `text` | Output format: `text` or `json` |
+| `--format` | `-f` | `text` | Output format: `text`, `json`, or `sarif` |
 
 ---
 
@@ -138,6 +138,30 @@ spinlint validate --format json 'pipelines/*.json' \
 spinlint validate --format json 'pipelines/*.json' \
   | jq -r '.[] | select(.violations | length > 0) | .file'
 ```
+
+### sarif
+
+Emits a [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) document. Upload it to [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning) to surface violations as inline annotations directly on PR diffs — no log diving required.
+
+```bash
+spinlint validate --format sarif 'pipelines/*.json' > results.sarif
+```
+
+**GitHub Actions — upload to Code Scanning:**
+
+```yaml
+- name: Run spinlint (SARIF)
+  run: ./bin/spinlint validate --format sarif 'pipelines/*.json' > results.sarif || true
+
+- name: Upload SARIF to GitHub Code Scanning
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: results.sarif
+```
+
+> The `|| true` prevents a non-zero exit from blocking the upload step. The job must have `permissions: security-events: write`.
+
+Each violation maps to a SARIF `result` with `ruleId`, `level: "error"`, the violation message, and a `physicalLocation` URI relative to the repository root.
 
 ---
 
@@ -328,7 +352,7 @@ type Stage struct {
 }
 ```
 
-The rule will automatically be included in both `text` and `json` output with no further changes.
+The rule will automatically be included in `text`, `json`, and `sarif` output with no further changes.
 
 ---
 
