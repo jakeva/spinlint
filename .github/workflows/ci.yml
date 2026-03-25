@@ -31,3 +31,26 @@ jobs:
           cache: true
 
       - run: make test
+
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build spinlint
+        run: make build
+
+      - name: Run spinlint (SARIF)
+        run: ./bin/spinlint validate --format sarif 'testdata/*.json' > results.sarif || true
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
