@@ -39,13 +39,13 @@ func newValidateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&format, "format", "f", "text", "Output format: text or json")
+	cmd.Flags().StringVarP(&format, "format", "f", "text", "Output format: text, json, or sarif")
 	return cmd
 }
 
 func runValidate(cmd *cobra.Command, args []string, format string) error {
-	if format != "text" && format != "json" {
-		return fmt.Errorf("unknown format %q: must be text or json", format)
+	if format != "text" && format != "json" && format != "sarif" {
+		return fmt.Errorf("unknown format %q: must be text, json, or sarif", format)
 	}
 
 	rep := reporter.New(cmd.OutOrStdout(), format)
