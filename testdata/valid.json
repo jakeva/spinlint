@@ -1,0 +1,23 @@
+{
+  "name": "Deploy to Production",
+  "stages": [
+    {
+      "type": "wait",
+      "name": "Wait 30s",
+      "refId": "1",
+      "requisiteStageRefIds": []
+    },
+    {
+      "type": "manualJudgment",
+      "name": "Approve Deployment",
+      "refId": "2",
+      "requisiteStageRefIds": ["1"]
+    },
+    {
+      "type": "deploy",
+      "name": "Deploy to Prod",
+      "refId": "3",
+      "requisiteStageRefIds": ["1", "2"]
+    }
+  ]
+}

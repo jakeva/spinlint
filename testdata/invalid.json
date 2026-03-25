@@ -1,0 +1,23 @@
+{
+  "name": "Broken Pipeline",
+  "stages": [
+    {
+      "type": "wait",
+      "name": "",
+      "refId": "1",
+      "requisiteStageRefIds": []
+    },
+    {
+      "type": "",
+      "name": "Deploy to Prod",
+      "refId": "2",
+      "requisiteStageRefIds": ["1", "99"]
+    },
+    {
+      "type": "manualJudgment",
+      "name": "Approve",
+      "refId": "",
+      "requisiteStageRefIds": []
+    }
+  ]
+}
