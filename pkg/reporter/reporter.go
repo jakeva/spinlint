@@ -36,7 +36,11 @@ func (r *Reporter) Add(file string, violations []rules.Violation) {
 			return
 		}
 		for _, v := range violations {
-			fmt.Fprintf(r.out, "%s: [%s] %s\n", file, v.Rule, v.Message)
+			if v.Severity == "warning" {
+				fmt.Fprintf(r.out, "%s: [warn: %s] %s\n", file, v.Rule, v.Message)
+			} else {
+				fmt.Fprintf(r.out, "%s: [%s] %s\n", file, v.Rule, v.Message)
+			}
 		}
 		return
 	}
@@ -130,9 +134,13 @@ func (r *Reporter) flushSARIF() error {
 					ShortDescription: sarifMessage{Text: v.Rule},
 				})
 			}
+			level := v.Severity
+			if level == "" {
+				level = "error"
+			}
 			results = append(results, sarifResult{
 				RuleID:  v.Rule,
-				Level:   "error",
+				Level:   level,
 				Message: sarifMessage{Text: v.Message},
 				Locations: []sarifLocation{
 					{

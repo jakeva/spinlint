@@ -6,4 +6,5 @@ var All = []Rule{
 	BrokenRequisiteRefs{},
 	DuplicateRefIDs{},
 	CircularDependencies{},
+	OrphanedStages{},
 }
