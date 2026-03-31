@@ -1,0 +1,31 @@
+{
+  "name": "complex-multi-cloud-deploy",
+  "application": "payments-service",
+  "limitConcurrent": true,
+  "keepWaitingPipelines": false,
+  "stages": [
+    {"type": "jenkins",  "name": "Run integration tests",          "refId": "1",  "requisiteStageRefIds": []},
+    {"type": "bake",     "name": "Bake AMI",                       "refId": "2",  "requisiteStageRefIds": ["1"]},
+    {"type": "deploy",   "name": "Deploy to staging",              "refId": "3",  "requisiteStageRefIds": ["2"]},
+    {                                                               "refId": "4",  "requisiteStageRefIds": ["3"]},
+    {"type": "manualJudgment", "name": "Approve prod rollout",     "refId": "5",  "requisiteStageRefIds": ["4"]},
+    {"type": "deploy",   "name": "Deploy to prod us-east-1",       "refId": "6",  "requisiteStageRefIds": ["5"]},
+    {"type": "deploy",   "name": "Deploy to prod us-west-2",       "refId": "6",  "requisiteStageRefIds": ["5"]},
+    {"type": "webhook",  "name": "Notify PagerDuty",               "refId": "8",  "requisiteStageRefIds": ["6", "7"]},
+    {"type": "wait",     "name": "Wait for DNS propagation",       "refId": "9",  "requisiteStageRefIds": ["8"]},
+    {"type": "checkPreconditions", "name": "Validate health checks","refId": "10", "requisiteStageRefIds": ["9", "99"]},
+    {"type": "runJob",   "name": "Run smoke tests",                "refId": "11", "requisiteStageRefIds": ["10"]},
+    {"type": "scaleDown","name": "Scale down canary",              "refId": "12", "requisiteStageRefIds": ["11"]},
+    {"type": "enableServerGroup",  "name": "Enable new server group",  "refId": "13", "requisiteStageRefIds": ["12"]},
+    {"type": "disableServerGroup", "name": "Disable old server group", "refId": "14", "requisiteStageRefIds": ["13"]},
+    {"type": "destroyServerGroup", "name": "Destroy old server group", "refId": "15", "requisiteStageRefIds": ["16"]},
+    {"type": "findImage","name": "Find latest approved image",     "refId": "16", "requisiteStageRefIds": ["15"]},
+    {"type": "pipeline", "name": "Trigger rollback pipeline",      "refId": "17", "requisiteStageRefIds": ["14"]},
+    {"type": "jenkins",                                             "refId": "18", "requisiteStageRefIds": ["17"]},
+    {"type": "deploy",   "name": "",                               "refId": "19", "requisiteStageRefIds": ["18"]},
+    {"type": "wait",     "name": "Orphaned stage - no one depends on this", "refId": "20", "requisiteStageRefIds": []}
+  ],
+  "triggers": [],
+  "parameters": [],
+  "notifications": []
+}

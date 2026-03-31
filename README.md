@@ -232,6 +232,26 @@ Self-loops (`requisiteStageRefIds: ["1"]` on stage `"1"`) are also detected.
 
 ---
 
+### `orphaned-stages` _(warning)_
+
+Flags stages that are completely disconnected from the pipeline graph: they have no prerequisites of their own (`requisiteStageRefIds` is empty) **and** no other stage depends on them. These are isolated islands that Spinnaker will run unconditionally in parallel with the rest of the pipeline, which is usually unintentional.
+
+This rule does **not** flag valid terminal stages (stages at the end of a dependency chain that nothing else depends on) — those have prerequisites and are a normal part of pipeline design.
+
+Stages with an empty `refId` are skipped (caught by `required-stage-fields` instead).
+
+**Checks:** every stage with an empty `requisiteStageRefIds` is depended on by at least one other stage.
+
+**Severity:** warning — violations appear as `[warn: orphaned-stages]` in text output and as `"level": "warning"` in SARIF.
+
+**Example violation:**
+
+```
+pipelines/deploy.json: [warn: orphaned-stages] stage "20" is an orphaned island: nothing depends on it and it has no prerequisites
+```
+
+---
+
 ## Exit Codes
 
 | Code | Meaning |
@@ -251,6 +271,9 @@ spinlint validate 'pipelines/*.json' || exit 1
 
 ```
 spinlint/
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # CI: lint + test + SARIF upload on push/PR
 ├── cmd/
 │   └── spinlint/
 │       └── main.go          # CLI entry point (cobra root + validate command)
@@ -263,16 +286,19 @@ spinlint/
 │   │   ├── required_fields.go
 │   │   ├── requisite_refs.go
 │   │   ├── duplicate_ref_ids.go
-│   │   └── circular_deps.go
+│   │   ├── circular_deps.go
+│   │   └── orphaned_stages.go
 │   ├── loader/
 │   │   └── loader.go        # Glob expansion and JSON file loading
 │   └── reporter/
-│       └── reporter.go      # Text and JSON output formatting
+│       └── reporter.go      # Text, JSON, and SARIF output formatting
 ├── testdata/
 │   ├── valid.json           # A well-formed 3-stage pipeline
-│   └── invalid.json         # Pipeline with violations across multiple rules
+│   ├── invalid.json         # Pipeline with violations across multiple rules
+│   └── complex.json         # 20-stage pipeline hitting all 5 rules
 ├── go.mod
 ├── Makefile
+├── CONTRIBUTING.md
 └── README.md
 ```
 
