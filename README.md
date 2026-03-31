@@ -234,9 +234,9 @@ Self-loops (`requisiteStageRefIds: ["1"]` on stage `"1"`) are also detected.
 
 ### `orphaned-stages` _(warning)_
 
-Flags stages that are completely disconnected from the pipeline graph: they have no prerequisites of their own (`requisiteStageRefIds` is empty) **and** no other stage depends on them. These are isolated islands that Spinnaker will run unconditionally in parallel with the rest of the pipeline, which is usually unintentional.
+Flags stages with no prerequisites and no dependents. These run unconditionally, independent of the rest of the pipeline.
 
-This rule does **not** flag valid terminal stages (stages at the end of a dependency chain that nothing else depends on) — those have prerequisites and are a normal part of pipeline design.
+Stages at the end of a dependency chain (prerequisites but no dependents) are not flagged.
 
 Stages with an empty `refId` are skipped (caught by `required-stage-fields` instead).
 
